@@ -1,0 +1,119 @@
+syntax = "v1"
+
+info (
+	title:   "反向图灵测试"
+	desc:    "反向图灵测试"
+	author:  "lijing"
+	email:   "lijing@oneflow.org"
+	version: "v1"
+)
+
+type (
+	GameDevicePathReq {
+		DeviceId string `path:"deviceId"`
+	}
+	GamePathReq {
+		Id string `path:"id"`
+	}
+	GameAllResp {
+		records []GameResp `json:"records"`
+	}
+	GameCreateReq {
+		aiNum int `json:"aiNum"`
+	}
+	EmptyReq  {}
+	GameResp {
+		Id             string          `json:"id"`
+		Code           string          `json:"code"`
+		DeviceId       string          `json:"deviceId"`
+		AiPlayers      []GameCharacter `json:"aiPlayers"`
+		Player         GameCharacter   `json:"player"`
+		Status         string          `json:"status"`
+		Progress       string          `json:"progress"`
+		AiNum          int             `json:"aiNum"`
+		CharacterNames []string        `json:"characterNames"`
+		WhoIsHuman     string          `json:"whoIsHuman"`
+		CreatedAt      string          `json:"createdAt"`
+		UpdatedAt      string          `json:"updatedAt"`
+		GameStartTime  string          `json:"gameStartTime"`
+		GameEndTime    string          `json:"gameEndTime"`
+	}
+	GameCharacter {
+		Id         string     `json:"id"`
+		IsAi       bool       `json:"isAi"`
+		Character  *Character `json:"character"`
+		Agent      *Agent     `json:"agent,omitempty"`
+		VoteTo     string     `json:"voteTo,omitempty"`
+		FinalVotes int        `json:"finalVotes,omitempty"`
+		CreatedAt  string     `json:"createdAt"`
+		UpdatedAt  string     `json:"updatedAt"`
+	}
+	Character {
+		Id          string `json:"id"`
+		Name        string `json:"name"`
+		Positioning string `json:"positioning"`
+		Avatar      string `json:"avatar"`
+		Portrait    string `json:"portrait"`
+		Profile     string `json:"profile"`
+		Enable      bool   `json:"enable"`
+	}
+	Agent {
+		Id        string `json:"id"`
+		ModelName string `json:"modelName"`
+		//                             Endpoint     string            `json:"endpoint"`
+		//                             ApiKey       string            `json:"apiKey"`
+		PromptParams map[string]string `json:"promptParams"`
+		Enable       bool              `json:"enable"`
+	}
+	GameCharacterTalkReq {
+		GameId          string   `path:"gameId"`
+		GameCharacterId string   `path:"gameCharacterId"`
+		talkType        string   `json:"talkType"`
+		Params          []string `json:"params"`
+	}
+	EmptyResp  {}
+)
+
+@server (
+	prefix:     /v1/game
+	group:      meta
+	middleware: AppAuthMiddleware
+)
+service app {
+	@doc (
+		summary:     "创建游戏"
+		description: "role=all"
+	)
+	@handler CreateGame
+	post / (GameCreateReq) returns (GameResp)
+
+	@doc (
+		summary:     "玩家的游戏列表"
+		description: "role=all"
+	)
+	@handler PageGame
+	get /page (EmptyReq) returns (GameAllResp)
+
+	@doc (
+		summary:     "获取游戏信息"
+		description: "role=all"
+	)
+	@handler GetGame
+	get /:id (GamePathReq) returns (GameResp)
+}
+
+@server (
+	prefix:     /v1/game
+	group:      meta
+	middleware: AppAuthMiddleware
+	timeout:    60s
+)
+service app {
+	@doc (
+		summary:     "与AI角色对话"
+		description: "role=all"
+	)
+	@handler GameCharacterTalk
+	post /talk/:gameId/:gameCharacterId (GameCharacterTalkReq) returns (EmptyResp)
+}
+

@@ -1,0 +1,377 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "反向图灵测试",
+    "description": "反向图灵测试",
+    "version": "v1"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/game/": {
+      "post": {
+        "summary": "创建游戏",
+        "description": "role=all",
+        "operationId": "CreateGame",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/GameResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GameCreateReq"
+            }
+          }
+        ],
+        "tags": [
+          "meta"
+        ]
+      }
+    },
+    "/v1/game/page": {
+      "get": {
+        "summary": "玩家的游戏列表",
+        "description": "role=all",
+        "operationId": "PageGame",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/GameAllResp"
+            }
+          }
+        },
+        "tags": [
+          "meta"
+        ]
+      }
+    },
+    "/v1/game/talk/{gameId}/{gameCharacterId}": {
+      "post": {
+        "summary": "与AI角色对话",
+        "description": "role=all",
+        "operationId": "GameCharacterTalk",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/EmptyResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "gameCharacterId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GameCharacterTalkReq"
+            }
+          }
+        ],
+        "tags": [
+          "meta"
+        ]
+      }
+    },
+    "/v1/game/{id}": {
+      "get": {
+        "summary": "获取游戏信息",
+        "description": "role=all",
+        "operationId": "GetGame",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/GameResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "meta"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "Agent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "modelName": {
+          "type": "string"
+        },
+        "promptParams": {
+          "type": "object"
+        },
+        "enable": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      },
+      "title": "Agent",
+      "required": [
+        "id",
+        "modelName",
+        "promptParams",
+        "enable"
+      ]
+    },
+    "Character": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "positioning": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "portrait": {
+          "type": "string"
+        },
+        "profile": {
+          "type": "string"
+        },
+        "enable": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      },
+      "title": "Character",
+      "required": [
+        "id",
+        "name",
+        "positioning",
+        "avatar",
+        "portrait",
+        "profile",
+        "enable"
+      ]
+    },
+    "EmptyReq": {
+      "type": "object",
+      "title": "EmptyReq"
+    },
+    "EmptyResp": {
+      "type": "object",
+      "title": "EmptyResp"
+    },
+    "GameAllResp": {
+      "type": "object",
+      "properties": {
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GameResp"
+          }
+        }
+      },
+      "title": "GameAllResp",
+      "required": [
+        "records"
+      ]
+    },
+    "GameCharacter": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "isAi": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "character": {
+          "$ref": "#/definitions/Character"
+        },
+        "agent": {
+          "$ref": "#/definitions/Agent"
+        },
+        "voteTo": {
+          "type": "string"
+        },
+        "finalVotes": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      },
+      "title": "GameCharacter",
+      "required": [
+        "id",
+        "isAi",
+        "character",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "GameCharacterTalkReq": {
+      "type": "object",
+      "properties": {
+        "talkType": {
+          "type": "string"
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "GameCharacterTalkReq",
+      "required": [
+        "talkType",
+        "params"
+      ]
+    },
+    "GameCreateReq": {
+      "type": "object",
+      "properties": {
+        "aiNum": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "GameCreateReq",
+      "required": [
+        "aiNum"
+      ]
+    },
+    "GameDevicePathReq": {
+      "type": "object",
+      "title": "GameDevicePathReq"
+    },
+    "GamePathReq": {
+      "type": "object",
+      "title": "GamePathReq"
+    },
+    "GameResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "deviceId": {
+          "type": "string"
+        },
+        "aiPlayers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GameCharacter"
+          }
+        },
+        "player": {
+          "$ref": "#/definitions/GameCharacter"
+        },
+        "status": {
+          "type": "string"
+        },
+        "progress": {
+          "type": "string"
+        },
+        "aiNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "characterNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "whoIsHuman": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "gameStartTime": {
+          "type": "string"
+        },
+        "gameEndTime": {
+          "type": "string"
+        }
+      },
+      "title": "GameResp",
+      "required": [
+        "id",
+        "code",
+        "deviceId",
+        "aiPlayers",
+        "player",
+        "status",
+        "progress",
+        "aiNum",
+        "characterNames",
+        "whoIsHuman",
+        "createdAt",
+        "updatedAt",
+        "gameStartTime",
+        "gameEndTime"
+      ]
+    }
+  },
+  "securityDefinitions": {
+    "apiKey": {
+      "type": "apiKey",
+      "description": "Enter JWT Bearer token **_only_**",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}
