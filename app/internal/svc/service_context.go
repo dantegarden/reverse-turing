@@ -18,6 +18,7 @@ type ServiceContext struct {
 	Config            config.Config
 	DB                *gorm.DB
 	AppAuthMiddleware rest.Middleware
+	CorsMiddleware    rest.Middleware
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -25,6 +26,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Config:            c,
 		DB:                initMysql(c),
 		AppAuthMiddleware: middleware.NewAppAuthMiddleware(c.Auth.PrivateKey).Handle,
+		CorsMiddleware:    middleware.NewCorsMiddleware().Handle,
 	}
 }
 
