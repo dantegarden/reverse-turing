@@ -1,9 +1,7 @@
 package middleware
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
@@ -39,7 +37,7 @@ func (m *AppAuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		apiKey := tokenString[1]
-		token, err := rsaDecryptWithPEM(apiKey, m.PrivateKey)
+		token, err := RsaDecryptWithPEM(apiKey, m.PrivateKey)
 		if err != nil {
 			unauthorized(w, r, errors.New("无效的token"))
 			return
@@ -67,8 +65,8 @@ func unauthorized(w http.ResponseWriter, r *http.Request, err error) {
 	})
 }
 
-// rsaDecryptWithPEM 使用PEM格式的私钥进行解密
-func rsaDecryptWithPEM(encrypted string, privateKeyPem string) (string, error) {
+// RsaDecryptWithPEM 使用PEM格式的私钥进行解密
+func RsaDecryptWithPEM(encrypted string, privateKeyPem string) (string, error) {
 	// 解码私钥
 	block, _ := pem.Decode([]byte(privateKeyPem))
 	if block == nil {
@@ -88,17 +86,11 @@ func rsaDecryptWithPEM(encrypted string, privateKeyPem string) (string, error) {
 	}
 
 	// 进行解密
-	decrypted, err := rsa.DecryptOAEP(
-		sha256.New(),
-		rand.Reader,
-		privateKey,
-		encryptedBytes,
-		nil,
-	)
+	decryptedData, err := rsa.DecryptPKCS1v15(nil, privateKey, encryptedBytes)
 	if err != nil {
 		return "", err
 	}
 
 	// 返回解密后的字符串
-	return string(decrypted), nil
+	return string(decryptedData), nil
 }
