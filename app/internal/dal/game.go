@@ -20,7 +20,7 @@ const (
 type Game struct {
 	model.Model
 	Code           string           `json:"code" gorm:"column:code;size:32;"`
-	DeviceId       string           `json:"deviceId" gorm:"column:device_id;size:32;"`
+	DeviceId       string           `json:"deviceId" gorm:"column:device_id;size:36;"`
 	Status         GameStatus       `json:"status" gorm:"column:status;size:32;"`
 	Progress       string           `json:"progress" gorm:"column:progress;"`
 	AiNum          int              `json:"aiNum" gorm:"column:ai_num;type:int;"`

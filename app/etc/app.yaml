@@ -46,3 +46,8 @@ Auth:
     tCAaIBRCF9nSz1W/jgCaWhM0dk/fNgA6gKscxznXO5Fci79wSbvYV69J7u80Wu7B
     53ruvh0k9mq0Uap6FsOFw+O2pObORxaFH6+Dic8xOSt+LCF3uuXQzw==
     -----END RSA PRIVATE KEY-----
+
+AiBot:
+  AskJudge:
+    Endpoint: http://10.0.1.12:19110
+    ApiKey: app-NytZCsKO0t4ZZ92ZwDgHfh5o

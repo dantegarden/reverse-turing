@@ -11,4 +11,12 @@ type Config struct {
 	Auth struct {
 		PrivateKey string
 	}
+	AiBot AiBot
+}
+
+type AiBot struct {
+	AskJudge struct {
+		Endpoint string
+		ApiKey   string
+	}
 }

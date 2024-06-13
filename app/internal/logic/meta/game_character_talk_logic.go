@@ -76,6 +76,7 @@ func (l *GameCharacterTalkLogic) GameCharacterTalk(req *types.GameCharacterTalkR
 			"character":        gameCharacter.Character.Name,
 			"ai_num":           strconv.Itoa(game.AiNum),
 			"other_characters": strings.Join(characterNames, "、"),
+			"positioning":      gameCharacter.Character.Positioning,
 		},
 		ResponseMode: "streaming",
 		Query:        query,
