@@ -2,16 +2,20 @@ package meta
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/hu-1996/gormx"
+	"github.com/samber/lo"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zhouyangtingwen/dify-sdk-go"
 	"gorm.io/gorm"
 	"net/http"
 	"reverse-turing/app/internal/dal"
+	"reverse-turing/app/internal/sse"
 	"reverse-turing/app/internal/svc"
 	"reverse-turing/app/internal/types"
+	"reverse-turing/common/consts"
 	"reverse-turing/common/errno"
 	"reverse-turing/common/utils"
 	"strconv"
@@ -33,7 +37,10 @@ func NewGameCharacterTalkLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 	}
 }
 
-func (l *GameCharacterTalkLogic) GameCharacterTalk(req *types.GameCharacterTalkReq, w http.ResponseWriter) (resp *types.EmptyResp, err error) {
+func (l *GameCharacterTalkLogic) GameCharacterTalk(req *types.GameCharacterTalkReq, r *http.Request, w http.ResponseWriter) (resp *types.EmptyResp, err error) {
+	if err != nil {
+		return nil, err
+	}
 	deviceId, err := utils.GetDeviceInfo(l.ctx)
 	if err != nil {
 		return nil, err
@@ -64,10 +71,11 @@ func (l *GameCharacterTalkLogic) GameCharacterTalk(req *types.GameCharacterTalkR
 	}
 
 	// 准备调dify
-	difyConf := utils.GetDifyConfig(l.ctx, gameCharacter.Agent.Endpoint, gameCharacter.Agent.ApiKey)
+	difyConf := GetDifyConfig(l.ctx, gameCharacter.Agent.Endpoint, gameCharacter.Agent.ApiKey)
 	// 构建请求体
 	characterNames := utils.RemoveStringCreateNew(game.CharacterNames, gameCharacter.Character.Name)
-	query, err := dal.GetQuery(dal.TalkType(req.TalkType), req.Params...)
+	talkType := dal.TalkType(req.TalkType)
+	query, err := dal.GetQuery(talkType, req.Params...)
 	if err != nil {
 		return nil, err
 	}
@@ -83,16 +91,62 @@ func (l *GameCharacterTalkLogic) GameCharacterTalk(req *types.GameCharacterTalkR
 		User:         deviceId,
 	}
 
-	err = utils.SendDifyMessage(l.ctx, difyConf, difyReq, func(d string) {
-		_, err := fmt.Fprintf(w, "%s", d)
-		if err != nil {
-			return
-		}
-		w.(http.Flusher).Flush()
-	})
+	recvContent, err := SendDifyStreamMessage(l.ctx, difyConf, difyReq, w, GetEndMark(dal.TalkTypeAsk), true)
 	if err != nil {
 		return nil, err
 	}
 
-	return
+	// 是否需要裁决
+	if lo.Contains([]dal.TalkType{dal.TalkTypeAsk, dal.TalkTypeVote}, talkType) {
+
+		var judgeDifyConf *dify.Client
+		var judgeDifyReq *dify.ChatMessageRequest
+
+		switch talkType {
+		case dal.TalkTypeAsk:
+			judgeDifyConf = GetDifyConfig(l.ctx, l.svcCtx.Config.AiBot.AskJudge.Endpoint, l.svcCtx.Config.AiBot.AskJudge.ApiKey)
+			judgeDifyReq = &dify.ChatMessageRequest{
+				Inputs:       map[string]interface{}{},
+				ResponseMode: "streaming",
+				Query:        fmt.Sprintf("%s：%s", gameCharacter.Character.Name, recvContent),
+				User:         deviceId,
+			}
+
+		case dal.TalkTypeVote:
+			judgeDifyConf = GetDifyConfig(l.ctx, l.svcCtx.Config.AiBot.VoteJudge.Endpoint, l.svcCtx.Config.AiBot.VoteJudge.ApiKey)
+			judgeDifyReq = &dify.ChatMessageRequest{
+				Inputs:       map[string]interface{}{},
+				ResponseMode: "streaming",
+				Query:        fmt.Sprintf("%s：%s", gameCharacter.Character.Name, recvContent),
+				User:         deviceId,
+			}
+		}
+
+		judgeRecvContent, err := SendDifyStreamMessage(l.ctx, judgeDifyConf, judgeDifyReq, w, consts.EndMarkDone, false)
+		var judgeResp *types.GameJudgeResp
+		err = json.Unmarshal([]byte(judgeRecvContent), &judgeResp)
+		if err != nil {
+			return nil, err
+		}
+		judgeResp.JudgeType = req.TalkType
+		marshal, _ := json.Marshal(judgeResp)
+		Publish(w, &sse.Event{
+			Data: marshal,
+		})
+		Publish(w, &sse.Event{Data: []byte(consts.EndMarkDone)})
+	}
+
+	return &types.EmptyResp{}, nil
+}
+
+func GetEndMark(taskType dal.TalkType) string {
+	switch taskType {
+	case dal.TalkTypeOpening, dal.TalkTypeAnswer:
+		return consts.EndMarkDone
+	case dal.TalkTypeAsk:
+		return consts.EndMarkAsk
+	case dal.TalkTypeVote:
+		return consts.EndMarkVote
+	}
+	return consts.EndMarkDone
 }

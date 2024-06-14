@@ -19,4 +19,8 @@ type AiBot struct {
 		Endpoint string
 		ApiKey   string
 	}
+	VoteJudge struct {
+		Endpoint string
+		ApiKey   string
+	}
 }

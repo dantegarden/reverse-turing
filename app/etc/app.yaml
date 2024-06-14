@@ -51,3 +51,6 @@ AiBot:
   AskJudge:
     Endpoint: http://10.0.1.12:19110
     ApiKey: app-NytZCsKO0t4ZZ92ZwDgHfh5o
+  VoteJudge:
+    Endpoint: http://10.0.1.12:19110
+    ApiKey: app-NytZCsKO0t4ZZ92ZwDgHfh5o

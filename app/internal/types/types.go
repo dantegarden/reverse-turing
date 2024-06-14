@@ -54,6 +54,15 @@ type GameDevicePathReq struct {
 	DeviceId string `path:"deviceId"`
 }
 
+type GameJudgeResp struct {
+	JudgeType  string `json:"judgeType"`
+	Asker      string `json:"asker,omitempty"`
+	Question   string `json:"question,omitempty"`
+	Asked      string `json:"asked,omitempty"`
+	VoteTo     string `json:"voteTo,omitempty"`
+	VoteReason string `json:"voteReason,omitempty"`
+}
+
 type GamePathReq struct {
 	Id string `path:"id"`
 }
@@ -73,4 +82,7 @@ type GameResp struct {
 	UpdatedAt      string          `json:"updatedAt"`
 	GameStartTime  string          `json:"gameStartTime"`
 	GameEndTime    string          `json:"gameEndTime"`
+}
+
+type GameSentenceJudgeReq struct {
 }

@@ -71,6 +71,15 @@ type (
 		talkType        string   `json:"talkType"`
 		Params          []string `json:"params"`
 	}
+	GameSentenceJudgeReq  {}
+	GameJudgeResp {
+		JudgeType  string `json:"judgeType"`
+		Asker      string `json:"asker,omitempty"`
+		Question   string `json:"question,omitempty"`
+		Asked      string `json:"asked,omitempty"`
+		VoteTo     string `json:"voteTo,omitempty"`
+		VoteReason string `json:"voteReason,omitempty"`
+	}
 	EmptyResp  {}
 )
 

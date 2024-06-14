@@ -25,7 +25,7 @@ func GameCharacterTalkHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		}
 		w.Header().Set(`Content-Type`, `text/event-stream;charset=utf-8`)
 		l := meta.NewGameCharacterTalkLogic(r.Context(), svcCtx)
-		_, err := l.GameCharacterTalk(&req, w)
+		_, err := l.GameCharacterTalk(&req, r, w)
 		if err != nil {
 			xhttp.JsonBaseResponseCtx(r.Context(), w, err)
 		} else {
