@@ -13,7 +13,7 @@ type Agent struct {
 	model.Model
 	ModelName    string                  `json:"modelName" gorm:"column:model_name;size:32;"`
 	Endpoint     string                  `json:"endpoint" gorm:"column:endpoint;size:300;"`
-	ApiKey       string                  `json:"apiKey" gorm:"column:api_key;size:32;"`
+	ApiKey       string                  `json:"apiKey" gorm:"column:api_key;size:100;"`
 	PromptParams model.MapStringToString `json:"promptParams" gorm:"column:prompt_params;"`
 	Enable       bool                    `json:"enable" gorm:"column:enable;"`
 }

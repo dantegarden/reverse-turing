@@ -91,7 +91,7 @@ func (l *GameCharacterTalkLogic) GameCharacterTalk(req *types.GameCharacterTalkR
 		User:         deviceId,
 	}
 
-	recvContent, err := SendDifyStreamMessage(l.ctx, difyConf, difyReq, w, GetEndMark(dal.TalkTypeAsk), true)
+	recvContent, err := SendDifyStreamMessage(l.ctx, difyConf, difyReq, w, GetEndMark(talkType), true)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +135,6 @@ func (l *GameCharacterTalkLogic) GameCharacterTalk(req *types.GameCharacterTalkR
 		})
 		Publish(w, &sse.Event{Data: []byte(consts.EndMarkDone)})
 	}
-
 	return &types.EmptyResp{}, nil
 }
 

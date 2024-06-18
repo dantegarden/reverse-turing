@@ -77,7 +77,7 @@ func (l *CreateGameLogic) CreateGame(req *types.GameCreateReq) (resp *types.Game
 
 		// 查找agents
 		var agents []*dal.Agent
-		err = tx.Raw("SELECT * FROM agents WHERE enable = ? and deleted_at is null ORDER BY RAND() LIMIT ?", true, aiNum).Scan(&agents).Error
+		err = tx.Raw("SELECT * FROM agents WHERE enable = ? and deleted_at is null ORDER BY RAND() LIMIT ?", true, aiNum+1).Scan(&agents).Error
 		if err != nil {
 			return err
 		}
@@ -101,11 +101,14 @@ func (l *CreateGameLogic) CreateGame(req *types.GameCreateReq) (resp *types.Game
 			aiPlayers = append(aiPlayers, aiCharacter)
 		}
 
+		playerAgent := agents[rand.IntN(len(agents))]
 		player := &dal.GameCharacter{
 			GameId:      newGame.ID,
 			CharacterId: playerCharacter.ID,
 			Character:   playerCharacter,
 			IsAi:        false,
+			AgentId:     playerAgent.ID,
+			Agent:       playerAgent,
 		}
 
 		var allGameCharacters []*dal.GameCharacter
