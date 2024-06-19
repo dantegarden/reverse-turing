@@ -34,6 +34,12 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Path:    "/page",
 					Handler: meta.PageGameHandler(serverCtx),
 				},
+				{
+					// 获取游戏对话记录
+					Method:  http.MethodGet,
+					Path:    "/sentences/:id",
+					Handler: meta.GetGameSentencesHandler(serverCtx),
+				},
 			}...,
 		),
 		rest.WithPrefix("/v1/game"),
@@ -48,6 +54,12 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Method:  http.MethodPost,
 					Path:    "/talk/:gameId/:gameCharacterId",
 					Handler: meta.GameCharacterTalkHandler(serverCtx),
+				},
+				{
+					// 用户对话
+					Method:  http.MethodPost,
+					Path:    "/talk/:gameId/player/:gameCharacterId",
+					Handler: meta.PlayerTalkHandler(serverCtx),
 				},
 			}...,
 		),

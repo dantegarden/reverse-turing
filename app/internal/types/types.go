@@ -67,6 +67,13 @@ type GamePathReq struct {
 	Id string `path:"id"`
 }
 
+type GamePlayerTalkReq struct {
+	GameId          string `path:"gameId"`
+	GameCharacterId string `path:"gameCharacterId"`
+	TalkType        string `json:"talkType"`
+	Content         string `json:"content"`
+}
+
 type GameResp struct {
 	Id             string          `json:"id"`
 	Code           string          `json:"code"`
@@ -85,4 +92,14 @@ type GameResp struct {
 }
 
 type GameSentenceJudgeReq struct {
+}
+
+type SentenceResp struct {
+	GameId          string `json:"gameId"`
+	CharacterId     string `json:"characterId"`
+	GameCharacterId string `json:"gameCharacterId"`
+	AgentId         string `json:"agentId"`
+	Name            string `json:"name"`
+	TalkType        string `json:"talkType"`
+	Content         string `json:"content"`
 }

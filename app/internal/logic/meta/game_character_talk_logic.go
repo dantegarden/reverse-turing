@@ -38,9 +38,6 @@ func NewGameCharacterTalkLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *GameCharacterTalkLogic) GameCharacterTalk(req *types.GameCharacterTalkReq, r *http.Request, w http.ResponseWriter) (resp *types.EmptyResp, err error) {
-	if err != nil {
-		return nil, err
-	}
 	deviceId, err := utils.GetDeviceInfo(l.ctx)
 	if err != nil {
 		return nil, err
@@ -96,6 +93,21 @@ func (l *GameCharacterTalkLogic) GameCharacterTalk(req *types.GameCharacterTalkR
 		return nil, err
 	}
 
+	// 记录句子
+	sentence := &dal.Sentence{
+		GameId:          req.GameId,
+		GameCharacterId: gameCharacter.ID,
+		CharacterId:     gameCharacter.CharacterId,
+		AgentId:         gameCharacter.AgentId,
+		Name:            gameCharacter.Character.Name,
+		Content:         recvContent,
+		TalkType:        req.TalkType,
+	}
+	_, err = gormx.Insert[dal.Sentence](sentence)
+	if err != nil {
+		return nil, err
+	}
+
 	// 是否需要裁决
 	if lo.Contains([]dal.TalkType{dal.TalkTypeAsk, dal.TalkTypeVote}, talkType) {
 
@@ -106,7 +118,9 @@ func (l *GameCharacterTalkLogic) GameCharacterTalk(req *types.GameCharacterTalkR
 		case dal.TalkTypeAsk:
 			judgeDifyConf = GetDifyConfig(l.ctx, l.svcCtx.Config.AiBot.AskJudge.Endpoint, l.svcCtx.Config.AiBot.AskJudge.ApiKey)
 			judgeDifyReq = &dify.ChatMessageRequest{
-				Inputs:       map[string]interface{}{},
+				Inputs: map[string]interface{}{
+					"characters": strings.Join(characterNames, "、"),
+				},
 				ResponseMode: "streaming",
 				Query:        fmt.Sprintf("%s：%s", gameCharacter.Character.Name, recvContent),
 				User:         deviceId,
@@ -123,11 +137,17 @@ func (l *GameCharacterTalkLogic) GameCharacterTalk(req *types.GameCharacterTalkR
 		}
 
 		judgeRecvContent, err := SendDifyStreamMessage(l.ctx, judgeDifyConf, judgeDifyReq, w, consts.EndMarkDone, false)
-		var judgeResp *types.GameJudgeResp
-		err = json.Unmarshal([]byte(judgeRecvContent), &judgeResp)
 		if err != nil {
 			return nil, err
 		}
+		logx.Infof("judgeRecvContent: %s", judgeRecvContent)
+
+		var judgeResp types.GameJudgeResp
+		err = DeserializeJSON(judgeRecvContent, &judgeResp)
+		if err != nil {
+			return nil, err
+		}
+
 		judgeResp.JudgeType = req.TalkType
 		marshal, _ := json.Marshal(judgeResp)
 		Publish(w, &sse.Event{
@@ -148,4 +168,16 @@ func GetEndMark(taskType dal.TalkType) string {
 		return consts.EndMarkVote
 	}
 	return consts.EndMarkDone
+}
+
+func DeserializeJSON(input string, judgeResp *types.GameJudgeResp) error {
+	// 处理 markdown 格式的 json 字符串
+	if strings.HasPrefix(input, "```json") {
+		input = strings.TrimPrefix(input, "```json")
+		input = strings.TrimSuffix(input, "```")
+		input = strings.TrimSpace(input)
+	}
+
+	err := json.Unmarshal([]byte(input), judgeResp)
+	return err
 }

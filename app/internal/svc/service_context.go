@@ -42,7 +42,7 @@ func initMysql(config config.Config) *gorm.DB {
 	}
 
 	if config.Database.AutoMigrate {
-		if err = DB.AutoMigrate(dal.Game{}, dal.Agent{}, dal.Character{}, dal.GameCharacter{}); err != nil {
+		if err = DB.AutoMigrate(dal.Game{}, dal.Agent{}, dal.Character{}, dal.GameCharacter{}, dal.Sentence{}); err != nil {
 			log.Fatalf("mysql migrate error: %s", err)
 		}
 	}

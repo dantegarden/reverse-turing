@@ -71,6 +71,12 @@ type (
 		talkType        string   `json:"talkType"`
 		Params          []string `json:"params"`
 	}
+	GamePlayerTalkReq {
+		GameId          string `path:"gameId"`
+		GameCharacterId string `path:"gameCharacterId"`
+		talkType        string `json:"talkType"`
+		Content         string `json:"content"`
+	}
 	GameSentenceJudgeReq  {}
 	GameJudgeResp {
 		JudgeType  string `json:"judgeType"`
@@ -81,6 +87,15 @@ type (
 		VoteReason string `json:"voteReason,omitempty"`
 	}
 	EmptyResp  {}
+	SentenceResp {
+		GameId          string `json:"gameId"`
+		CharacterId     string `json:"characterId"`
+		GameCharacterId string `json:"gameCharacterId"`
+		AgentId         string `json:"agentId"`
+		Name            string `json:"name"`
+		TalkType        string `json:"talkType"`
+		Content         string `json:"content"`
+	}
 )
 
 @server (
@@ -109,6 +124,13 @@ service app {
 	)
 	@handler GetGame
 	get /:id (GamePathReq) returns (GameResp)
+
+	@doc (
+		summary:     "获取游戏对话记录"
+		description: "role=all"
+	)
+	@handler GetGameSentences
+	get /sentences/:id (GamePathReq) returns ([]SentenceResp)
 }
 
 @server (
@@ -124,5 +146,12 @@ service app {
 	)
 	@handler GameCharacterTalk
 	post /talk/:gameId/:gameCharacterId (GameCharacterTalkReq) returns (EmptyResp)
+
+	@doc (
+		summary:     "用户对话"
+		description: "role=all"
+	)
+	@handler PlayerTalk
+	post /talk/:gameId/player/:gameCharacterId (GamePlayerTalkReq) returns (EmptyResp)
 }
 
