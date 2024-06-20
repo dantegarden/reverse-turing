@@ -21,7 +21,7 @@ const (
 
 var TalkQueryTplMap = map[TalkType]string{
 	TalkTypeOpening: "请你说一段开场白",
-	TalkTypeAsk:     "请你对自己怀疑的人提出一个问题",
+	TalkTypeAsk:     "请你对%s提出一个问题",
 	TalkTypeAnswer:  "%s向你提问：%s",
 	TalkTypeVote:    "根据以下这些对话，请你选出最有可能是人类的对象，并给出理由。\n%s",
 }
